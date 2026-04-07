@@ -1,0 +1,7 @@
+services:
+  backend:
+    build:
+      context: ./backend
+    container_name: home-webserver-backend
+    ports:
+      - "8000:8000"

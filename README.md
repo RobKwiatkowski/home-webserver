@@ -2,7 +2,9 @@
 
 This repository contains an educational project focused on building a simple home server step by step.
 
-The project is developed locally on Windows first and will later be deployed to Raspberry Pi. The main goal is to learn by building a small but practical system based on microservices, networking, and containerization.
+* repo contains a simple backend API behind Nginx
+* runs locally with Docker Compose
+* current phase is completed / in progress
 
 ## Current goal
 
@@ -41,3 +43,8 @@ The planned technology stack includes:
 - Nginx
 - Docker
 - Docker Compose
+
+## Run locally
+
+```bash
+docker compose up --build

@@ -1,8 +1,12 @@
-from fastapi import FastAPI
-from sqlalchemy import inspect
+from typing import List
 
-from .database import Base, check_database_connection, engine
+from fastapi import Depends, FastAPI
+from sqlalchemy import inspect
+from sqlalchemy.orm import Session
+
+from .database import Base, check_database_connection, engine, get_db
 from .models import Note
+from .schemas import NoteCreate, NoteResponse
 
 app = FastAPI(title="Home Webserver API")
 
@@ -32,3 +36,23 @@ def tables_check() -> dict:
     inspector = inspect(engine)
     tables = inspector.get_table_names()
     return {"tables": tables}
+
+@app.get("/tables-check")
+def tables_check() -> dict:
+    inspector = inspect(engine)
+    tables = inspector.get_table_names()
+    return {"tables": tables}
+
+@app.post("/notes", response_model=NoteResponse)
+def create_note(note: NoteCreate, db: Session = Depends(get_db)):
+    db_note = Note(title=note.title, content=note.content)
+    db.add(db_note)
+    db.commit()
+    db.refresh(db_note)
+    return db_note
+
+
+@app.get("/notes", response_model=List[NoteResponse])
+def get_notes(db: Session = Depends(get_db)):
+    notes = db.query(Note).all()
+    return notes

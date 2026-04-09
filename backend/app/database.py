@@ -12,9 +12,22 @@ SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 Base = declarative_base()
 
 def check_database_connection() -> bool:
+    """
+    Checks if the database is connected.
+    """
     try:
         with engine.connect() as connection:
             connection.execute(text("SELECT 1"))
         return True
     except Exception:
         return False
+
+def get_db():
+    """
+    Gets a database connection.
+    """
+    db = SessionLocal()
+    try:
+        yield db
+    finally:
+        db.close()

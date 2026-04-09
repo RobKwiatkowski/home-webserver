@@ -4,6 +4,10 @@ services:
       context: ./backend
     container_name: home-webserver-backend
     restart: unless-stopped
+    environment:
+      DATABASE_URL: postgresql+psycopg://homeuser:homepassword@db:5432/homewebserver
+    depends_on:
+      - db
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
       interval: 30s
@@ -22,3 +26,19 @@ services:
       - ./nginx/html:/usr/share/nginx/html:ro
     depends_on:
       - backend
+
+  db:
+    image: postgres:16
+    container_name: home-webserver-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: homewebserver
+      POSTGRES_USER: homeuser
+      POSTGRES_PASSWORD: homepassword
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+volumes:
+  postgres_data:

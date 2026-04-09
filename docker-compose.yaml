@@ -5,7 +5,7 @@ services:
     container_name: home-webserver-backend
     restart: unless-stopped
     environment:
-      DATABASE_URL: postgresql+psycopg://homeuser:homepassword@db:5432/homewebserver
+      DATABASE_URL: ${DATABASE_URL}
     depends_on:
       - db
     healthcheck:
@@ -32,9 +32,9 @@ services:
     container_name: home-webserver-db
     restart: unless-stopped
     environment:
-      POSTGRES_DB: homewebserver
-      POSTGRES_USER: homeuser
-      POSTGRES_PASSWORD: homepassword
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
     ports:
       - "5432:5432"
     volumes:

@@ -3,10 +3,18 @@ services:
     build:
       context: ./backend
     container_name: home-webserver-backend
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
 
   nginx:
     image: nginx:stable
     container_name: home-webserver-nginx
+    restart: unless-stopped
     ports:
       - "80:80"
     volumes:

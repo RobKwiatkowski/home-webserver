@@ -1,9 +1,12 @@
 from fastapi import FastAPI
+from sqlalchemy import inspect
 
-from .database import check_database_connection
+from .database import Base, check_database_connection, engine
+from .models import Note
 
 app = FastAPI(title="Home Webserver API")
 
+Base.metadata.create_all(bind=engine)
 
 @app.get("/health")
 def health() -> dict:
@@ -23,3 +26,9 @@ def db_check() -> dict:
         return {"database": "connected"}
 
     return {"database": "not connected"}
+
+@app.get("/tables-check")
+def tables_check() -> dict:
+    inspector = inspect(engine)
+    tables = inspector.get_table_names()
+    return {"tables": tables}

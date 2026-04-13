@@ -2,6 +2,12 @@ const notesList = document.getElementById("notes-list");
 const noteForm = document.getElementById("note-form");
 const refreshButton = document.getElementById("refresh-button");
 const statusMessage = document.getElementById("status-message");
+const submitButton = document.getElementById("submit-button");
+const cancelEditButton = document.getElementById("cancel-edit-button");
+const titleInput = document.getElementById("title");
+const contentInput = document.getElementById("content");
+
+let editingNoteId = null;
 
 function formatDate(value) {
     if (!value) {
@@ -15,6 +21,28 @@ function formatDate(value) {
 function showStatus(message, isError = false) {
     statusMessage.textContent = message;
     statusMessage.classList.toggle("error-message", isError);
+}
+
+function escapeHtml(text) {
+    const div = document.createElement("div");
+    div.textContent = text;
+    return div.innerHTML;
+}
+
+function resetFormState() {
+    editingNoteId = null;
+    noteForm.reset();
+    submitButton.textContent = "Dodaj notatkę";
+    cancelEditButton.hidden = true;
+}
+
+function startEdit(note) {
+    editingNoteId = note.id;
+    titleInput.value = note.title;
+    contentInput.value = note.content;
+    submitButton.textContent = "Zapisz zmiany";
+    cancelEditButton.hidden = false;
+    showStatus(`Edytujesz notatkę: ${note.title}`);
 }
 
 async function loadNotes() {
@@ -43,44 +71,50 @@ async function loadNotes() {
             noteElement.innerHTML = `
                 <h3>${escapeHtml(note.title)}</h3>
                 <div class="note-meta">
-                    Utworzono: ${formatDate(note.created_at)}
+                    Utworzono: ${formatDate(note.created_at)}<br>
+                    Zaktualizowano: ${formatDate(note.updated_at)}
                 </div>
                 <div class="note-content">${escapeHtml(note.content)}</div>
                 <div class="note-actions">
+                    <button class="edit-button" data-id="${note.id}">Edytuj</button>
                     <button class="delete-button" data-id="${note.id}">Usuń</button>
                 </div>
             `;
 
             notesList.appendChild(noteElement);
-        }
 
-        const deleteButtons = document.querySelectorAll(".delete-button");
-        deleteButtons.forEach((button) => {
-            button.addEventListener("click", async () => {
-                const noteId = button.dataset.id;
-                await deleteNote(noteId);
+            const editButton = noteElement.querySelector(".edit-button");
+            editButton.addEventListener("click", () => startEdit(note));
+
+            const deleteButton = noteElement.querySelector(".delete-button");
+            deleteButton.addEventListener("click", async () => {
+                await deleteNote(note.id);
             });
-        });
+        }
     } catch (error) {
         notesList.innerHTML = "<p>Nie udało się załadować notatek.</p>";
         showStatus(error.message, true);
     }
 }
 
-async function createNote(event) {
+async function createOrUpdateNote(event) {
     event.preventDefault();
 
-    const title = document.getElementById("title").value.trim();
-    const content = document.getElementById("content").value.trim();
+    const title = titleInput.value.trim();
+    const content = contentInput.value.trim();
 
     if (!title || !content) {
         showStatus("Tytuł i treść są wymagane.", true);
         return;
     }
 
+    const isEditing = editingNoteId !== null;
+    const url = isEditing ? `/api/notes/${editingNoteId}` : "/api/notes";
+    const method = isEditing ? "PUT" : "POST";
+
     try {
-        const response = await fetch("/api/notes", {
-            method: "POST",
+        const response = await fetch(url, {
+            method,
             headers: {
                 "Content-Type": "application/json"
             },
@@ -88,11 +122,20 @@ async function createNote(event) {
         });
 
         if (!response.ok) {
-            throw new Error("Nie udało się dodać notatki.");
+            throw new Error(
+                isEditing
+                    ? "Nie udało się zaktualizować notatki."
+                    : "Nie udało się dodać notatki."
+            );
         }
 
-        noteForm.reset();
-        showStatus("Notatka została dodana.");
+        showStatus(
+            isEditing
+                ? "Notatka została zaktualizowana."
+                : "Notatka została dodana."
+        );
+
+        resetFormState();
         await loadNotes();
     } catch (error) {
         showStatus(error.message, true);
@@ -109,6 +152,10 @@ async function deleteNote(noteId) {
             throw new Error("Nie udało się usunąć notatki.");
         }
 
+        if (editingNoteId === noteId) {
+            resetFormState();
+        }
+
         showStatus("Notatka została usunięta.");
         await loadNotes();
     } catch (error) {
@@ -116,13 +163,11 @@ async function deleteNote(noteId) {
     }
 }
 
-function escapeHtml(text) {
-    const div = document.createElement("div");
-    div.textContent = text;
-    return div.innerHTML;
-}
-
-noteForm.addEventListener("submit", createNote);
+noteForm.addEventListener("submit", createOrUpdateNote);
 refreshButton.addEventListener("click", loadNotes);
+cancelEditButton.addEventListener("click", () => {
+    resetFormState();
+    showStatus("Edycja anulowana.");
+});
 
 loadNotes();

@@ -141,3 +141,16 @@ button:hover {
 .error-message {
     color: #b91c1c;
 }
+
+.form-actions {
+    display: flex;
+    gap: 12px;
+}
+
+.edit-button {
+    background: #d97706;
+}
+
+.edit-button:hover {
+    background: #b45309;
+}

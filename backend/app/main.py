@@ -1,38 +1,52 @@
 from fastapi import FastAPI
-from sqlalchemy import inspect
+from sqlalchemy import text
 
-from .database import Base, check_database_connection, engine
-from .routers.notes import router as notes_router
+from app.database import Base, engine, SessionLocal
+from app import models
+from app.routers import notes
 
 app = FastAPI(title="Home Webserver API")
 
 Base.metadata.create_all(bind=engine)
 
-app.include_router(notes_router)
+app.include_router(notes.router)
 
 
 @app.get("/health")
-def health() -> dict:
+def health():
     return {"status": "ok"}
 
 
 @app.get("/message")
-def message() -> dict:
-    return {"message": "Home Webserver API is running"}
+def message():
+    return {"message": "Hello from backend"}
 
 
 @app.get("/db-check")
-def db_check() -> dict:
-    is_connected = check_database_connection()
-
-    if is_connected:
-        return {"database": "connected"}
-
-    return {"database": "not connected"}
+def db_check():
+    db = SessionLocal()
+    try:
+        db.execute(text("SELECT 1"))
+        return {"status": "ok", "database": "connected"}
+    finally:
+        db.close()
 
 
 @app.get("/tables-check")
-def tables_check() -> dict:
-    inspector = inspect(engine)
-    tables = inspector.get_table_names()
-    return {"tables": tables}
+def tables_check():
+    db = SessionLocal()
+    try:
+        result = db.execute(
+            text(
+                """
+                SELECT table_name
+                FROM information_schema.tables
+                WHERE table_schema = 'public'
+                ORDER BY table_name
+                """
+            )
+        )
+        tables = [row[0] for row in result.fetchall()]
+        return {"tables": tables}
+    finally:
+        db.close()

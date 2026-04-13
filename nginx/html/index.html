@@ -1,17 +1,60 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="pl">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Home Webserver</title>
+    <title>Home Notes</title>
+    <link rel="stylesheet" href="/style.css">
 </head>
 <body>
-    <h1>Home Webserver</h1>
-    <p>Nginx reverse proxy is running.</p>
+    <main class="container">
+        <header class="page-header">
+            <h1>Home Notes</h1>
+            <p>Prosty notatnik oparty o FastAPI, PostgreSQL i Nginx.</p>
+        </header>
 
-    <ul>
-        <li><a href="/api/health">Health check</a></li>
-        <li><a href="/api/message">API message</a></li>
-    </ul>
+        <section class="card">
+            <h2>Dodaj notatkę</h2>
+
+            <form id="note-form">
+                <div class="form-group">
+                    <label for="title">Tytuł</label>
+                    <input
+                        type="text"
+                        id="title"
+                        name="title"
+                        placeholder="Np. Plan na weekend"
+                        required
+                    >
+                </div>
+
+                <div class="form-group">
+                    <label for="content">Treść</label>
+                    <textarea
+                        id="content"
+                        name="content"
+                        rows="6"
+                        placeholder="Wpisz treść notatki..."
+                        required
+                    ></textarea>
+                </div>
+
+                <button type="submit">Dodaj notatkę</button>
+            </form>
+
+            <p id="status-message"></p>
+        </section>
+
+        <section class="card">
+            <h2>Wszystkie notatki</h2>
+            <button id="refresh-button" type="button">Odśwież</button>
+
+            <div id="notes-list">
+                <p>Tu pojawią się notatki.</p>
+            </div>
+        </section>
+    </main>
+
+    <script src="/app.js"></script>
 </body>
 </html>

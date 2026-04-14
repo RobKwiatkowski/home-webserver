@@ -26,3 +26,4 @@ class Note(Base):
         onupdate=lambda: datetime.now(WARSAW_TZ),
         nullable=False,
     )
+    category: Mapped[str | None] = mapped_column(String(200), nullable=True)

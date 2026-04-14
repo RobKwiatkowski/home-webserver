@@ -12,7 +12,11 @@ router = APIRouter(prefix="/notes", tags=["notes"])
 
 @router.post("", response_model=NoteResponse)
 def create_note(note: NoteCreate, db: Session = Depends(get_db)):
-    db_note = Note(title=note.title, content=note.content)
+    db_note = Note(
+        title=note.title,
+        content=note.content,
+        category=note.category,
+    )
     db.add(db_note)
     db.commit()
     db.refresh(db_note)
@@ -36,14 +40,15 @@ def get_note(note_id: int, db: Session = Depends(get_db)):
 
 
 @router.put("/{note_id}", response_model=NoteResponse)
-def update_note(note_id: int, note_update: NoteUpdate, db: Session = Depends(get_db)):
+def update_note(note_id: int, content_update: NoteUpdate, db: Session = Depends(get_db)):
     note = db.query(Note).filter(Note.id == note_id).first()
 
     if note is None:
         raise HTTPException(status_code=404, detail="Note not found")
 
-    note.title = note_update.title
-    note.content = note_update.content
+    note.title = content_update.title
+    note.content = content_update.content
+    note.category = content_update.category
 
     db.commit()
     db.refresh(note)

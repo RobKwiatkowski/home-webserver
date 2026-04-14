@@ -7,7 +7,6 @@ from app.routers import notes
 
 app = FastAPI(title="Home Webserver API")
 
-Base.metadata.create_all(bind=engine)
 
 app.include_router(notes.router)
 

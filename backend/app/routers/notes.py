@@ -21,7 +21,7 @@ def create_note(note: NoteCreate, db: Session = Depends(get_db)):
 
 @router.get("", response_model=List[NoteResponse])
 def get_notes(db: Session = Depends(get_db)):
-    notes = db.query(Note).all()
+    notes = db.query(Note).order_by(Note.id.desc()).all()
     return notes
 
 

@@ -3,12 +3,13 @@ from sqlalchemy import text
 
 from app.database import Base, engine, SessionLocal
 from app import models
-from app.routers import notes
+from app.routers import notes, files
 
 app = FastAPI(title="Home Webserver API")
 
 
 app.include_router(notes.router)
+app.include_router(files.router)
 
 
 @app.get("/health")

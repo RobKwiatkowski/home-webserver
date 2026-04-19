@@ -49,12 +49,19 @@
         </section>
 
         <section class="card">
-            <div class="notes-header">
-                <h2>Wszystkie notatki</h2>
-                <button id="refresh-button" type="button">Odśwież</button>
+            <h2>Pliki</h2>
+
+            <div class="form-group">
+                <label for="fileInput">Wybierz plik</label>
+                <input type="file" id="fileInput" />
             </div>
 
-            <div id="notes-list" class="notes-list"></div>
+            <div class="form-actions">
+                <button type="button" onclick="uploadFile()">Wyślij plik</button>
+            </div>
+
+            <p id="filesMessage" class="status-message"></p>
+            <ul id="filesList"></ul>
         </section>
     </main>
 

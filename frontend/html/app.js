@@ -9,6 +9,7 @@ const contentInput = document.getElementById("content");
 
 let editingNoteId = null;
 
+
 function formatDate(value) {
     if (!value) {
         return "Brak daty";
@@ -163,6 +164,87 @@ async function deleteNote(noteId) {
     }
 }
 
+async function uploadFile() {
+  const input = document.getElementById("fileInput");
+  const message = document.getElementById("filesMessage");
+
+  if (!input.files || input.files.length === 0) {
+    message.textContent = "Please select a file.";
+    return;
+  }
+
+  const formData = new FormData();
+  formData.append("file", input.files[0]);
+
+  try {
+    const response = await fetch("/api/files", {
+      method: "POST",
+      body: formData,
+    });
+
+    if (!response.ok) {
+      throw new Error("Upload failed");
+    }
+
+    input.value = "";
+    message.textContent = "File uploaded successfully.";
+    await loadFiles();
+  } catch (error) {
+    message.textContent = "Failed to upload file.";
+    console.error(error);
+  }
+}
+
+async function loadFiles() {
+  const filesList = document.getElementById("filesList");
+  filesList.innerHTML = "";
+
+  try {
+    const response = await fetch("/api/files");
+    if (!response.ok) {
+      throw new Error("Failed to load files");
+    }
+
+    const files = await response.json();
+
+    if (files.length === 0) {
+      filesList.innerHTML = "<li>Brak plików.</li>";
+      return;
+    }
+
+    for (const file of files) {
+      const li = document.createElement("li");
+
+      li.innerHTML = `
+        <strong>${escapeHtml(file.original_name)}</strong>
+        (${file.size} bytes)
+        <a href="/api/files/${file.id}/download">Download</a>
+        <button onclick="deleteFile(${file.id})">Delete</button>
+      `;
+
+      filesList.appendChild(li);
+    }
+  } catch (error) {
+    console.error(error);
+  }
+}
+
+async function deleteFile(fileId) {
+  try {
+    const response = await fetch(`/api/files/${fileId}`, {
+      method: "DELETE",
+    });
+
+    if (!response.ok) {
+      throw new Error("Delete failed");
+    }
+
+    await loadFiles();
+  } catch (error) {
+    console.error(error);
+  }
+}
+
 noteForm.addEventListener("submit", createOrUpdateNote);
 refreshButton.addEventListener("click", loadNotes);
 cancelEditButton.addEventListener("click", () => {
@@ -171,3 +253,4 @@ cancelEditButton.addEventListener("click", () => {
 });
 
 loadNotes();
+loadFiles();

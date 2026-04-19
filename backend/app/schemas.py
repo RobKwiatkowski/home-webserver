@@ -1,3 +1,5 @@
+"""Pydantic schemas for request and response validation used by the FastAPI API."""
+
 from datetime import datetime
 
 from pydantic import BaseModel
@@ -22,6 +24,17 @@ class NoteResponse(BaseModel):
     created_at: datetime
     updated_at: datetime
     category: str | None = None
+
+    class Config:
+        from_attributes = True
+
+class FileResponse(BaseModel):
+    id: int
+    original_name: str
+    stored_name: str
+    content_type: str | None = None
+    size: int
+    created_at: datetime
 
     class Config:
         from_attributes = True

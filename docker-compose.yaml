@@ -2,6 +2,8 @@ services:
   backend:
     build:
       context: ./backend
+    ports:
+      - "8000:8000"
     container_name: home-webserver-backend
     restart: unless-stopped
     environment:
@@ -9,13 +11,13 @@ services:
     depends_on:
       - db
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
-      interval: 30s
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/health')"]
+      interval: 10s
       timeout: 5s
-      retries: 3
-      start_period: 10s
+      retries: 5
     volumes:
       - ./backend:/app
+      - ./backend/uploads:/app/uploads
 
   nginx:
     image: nginx:stable

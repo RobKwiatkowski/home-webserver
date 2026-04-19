@@ -167,9 +167,10 @@ async function deleteNote(noteId) {
 async function uploadFile() {
   const input = document.getElementById("fileInput");
   const message = document.getElementById("filesMessage");
+  console.log("NEW uploadFile loaded");
 
   if (!input.files || input.files.length === 0) {
-    message.textContent = "Please select a file.";
+    message.textContent = "Wybierz plik.";
     return;
   }
 
@@ -183,14 +184,33 @@ async function uploadFile() {
     });
 
     if (!response.ok) {
-      throw new Error("Upload failed");
+      let errorMessage = "Nie udało się wysłać pliku.";
+
+      try {
+        const responseText = await response.text();
+        console.log("Upload error status:", response.status);
+        console.log("Upload error raw response:", responseText);
+
+        try {
+          const errorData = JSON.parse(responseText);
+          if (errorData.detail) {
+            errorMessage = errorData.detail;
+          }
+        } catch {
+          // odpowiedź nie była JSON-em
+        }
+      } catch {
+        // nic, zostaje domyślny komunikat
+      }
+
+      throw new Error(errorMessage);
     }
 
     input.value = "";
-    message.textContent = "File uploaded successfully.";
+    message.textContent = "Plik został wysłany.";
     await loadFiles();
   } catch (error) {
-    message.textContent = "Failed to upload file.";
+    message.textContent = error.message;
     console.error(error);
   }
 }
@@ -230,19 +250,30 @@ async function loadFiles() {
 }
 
 async function deleteFile(fileId) {
-  try {
-    const response = await fetch(`/api/files/${fileId}`, {
-      method: "DELETE",
-    });
+    try {
+        const response = await fetch(`/api/files/${fileId}`, {
+            method: "DELETE",
+        });
 
-    if (!response.ok) {
-      throw new Error("Delete failed");
+        if (!response.ok) {
+            let errorMessage = "Nie udało się usunąć pliku.";
+
+            try {
+                const errorData = await response.json();
+                if (errorData.detail) {
+                    errorMessage = errorData.detail;
+                }
+            } catch {
+                // zostaw domyślny komunikat
+            }
+
+            throw new Error(errorMessage);
+        }
+
+        await loadFiles();
+    } catch (error) {
+        console.error(error);
     }
-
-    await loadFiles();
-  } catch (error) {
-    console.error(error);
-  }
 }
 
 noteForm.addEventListener("submit", createOrUpdateNote);

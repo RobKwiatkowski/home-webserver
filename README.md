@@ -1,33 +1,75 @@
 # Home Webserver
 
-Educational home server project built step by step with Docker and hosted on Raspberry Pi 3.
+A small home webserver project for learning Docker, FastAPI, PostgreSQL, Nginx, Alembic migrations, 
+and basic file upload handling before deployment on Raspberry Pi.
 
 ## Architecture
 
-The project is a small containerized web application built for learning Docker, networking, backend basics, and service separation before deployment on Raspberry Pi.
+This project is a small containerized web application built for learning backend development, Docker, 
+networking, and service-based architecture before deploying to Raspberry Pi.
 
-### Main components
+### Components
 
 - **Nginx**
-  - serves the frontend files
+  - serves the frontend
   - acts as the entry point to the application
-  - can forward API traffic to the backend service
+  - forwards API requests to the backend
 
-- **FastAPI backend**
-  - exposes the REST API
-  - handles note operations
-  - connects to PostgreSQL using SQLAlchemy
-  - includes health and database check endpoints
+- **FastAPI**
+  - provides the backend API
+  - handles notes and file operations
+  - connects to PostgreSQL through SQLAlchemy
 
 - **PostgreSQL**
   - stores application data
-  - runs in a separate container
-  - keeps data in a Docker volume
+  - keeps notes and file metadata
+  - runs as a separate container
 
 - **Alembic**
   - manages database schema changes
-  - creates and applies migrations
-  - is now the source of truth for schema evolution
+  - keeps schema evolution versioned and reproducible
+
+- **Local file storage**
+  - stores uploaded files on disk
+  - is separated from database metadata
+
+### Request flow
+
+1. The browser connects to **Nginx**
+2. Nginx serves the frontend
+3. The frontend sends API requests to **FastAPI**
+4. FastAPI reads and writes metadata in **PostgreSQL**
+5. Uploaded files are stored on disk in the uploads directory
+
+### Database management
+
+The database schema is managed through **Alembic migrations**.
+
+This means schema changes are versioned and applied explicitly, instead of being created automatically when the application starts.
+
+### Current scope
+
+The application currently includes:
+
+- a frontend served by Nginx
+- a backend API built with FastAPI
+- PostgreSQL for persistence
+- a notes feature with CRUD operations
+- a file upload feature with basic validation
+- health and database check endpoints
+
+### Why this setup
+
+This architecture keeps the project simple while introducing the core building blocks of modern web applications:
+
+- reverse proxy
+- backend API
+- relational database
+- migrations
+- local file storage
+- containerized services
+
+It also creates a solid base for future steps such as linking files to notes, background jobs, additional services, and Raspberry Pi deployment.
 
 ### Current request flow
 
@@ -62,9 +104,40 @@ PostgreSQL data is stored in a persistent Docker volume, while the backend and f
 
 ## Features
 
-- create notes
-- list notes
-- delete notes
+- create, list, update, and delete notes
+- upload files through the web interface
+- list uploaded files
+- download uploaded files
+- delete uploaded files
+- store file metadata in PostgreSQL
+- store uploaded files on disk
+- validate file size and allowed file types
+- manage database schema with Alembic migrations
+
+
+## File uploads
+
+Uploaded files are stored on disk, while file metadata is stored in PostgreSQL.
+
+Current implementation includes:
+
+- file upload from the frontend
+- file listing
+- file download
+- file deletion
+- basic file size validation
+- basic content type validation
+
+This is an MVP implementation intended for learning and further extension.
+
+## Upload limits
+
+The upload flow currently uses two layers of protection:
+
+- **Nginx** limits the maximum request body size
+- **FastAPI backend** validates the allowed file size and content type
+
+This makes error handling clearer and protects the application from oversized uploads.
 
 ## Run locally
 

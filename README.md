@@ -145,6 +145,8 @@ This makes error handling clearer and protects the application from oversized up
 docker compose up --build
 ```
 
+The backend applies pending Alembic migrations before starting Uvicorn, so the database schema is kept in sync during normal container startup.
+
 ## Database migrations
 
 Generate a new migration:
@@ -152,7 +154,7 @@ Generate a new migration:
 docker compose run --rm backend python -m alembic -c alembic.ini revision --autogenerate -m "change_name"
 ```
 
-Apply migrations:
+Apply migrations manually if needed:
 ```bash
 docker compose run --rm backend python -m alembic -c alembic.ini upgrade head
 ```

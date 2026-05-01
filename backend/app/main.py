@@ -1,15 +1,10 @@
 from fastapi import FastAPI
 from sqlalchemy import text
 
-from app.database import Base, engine, SessionLocal
-from app import models
+from app.database import SessionLocal
 from app.routers import notes, files
 
 app = FastAPI(title="Home Webserver API")
-
-@app.on_event("startup")
-def create_tables():
-    Base.metadata.create_all(bind=engine)
 
 app.include_router(notes.router)
 app.include_router(files.router)

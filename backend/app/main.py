@@ -7,6 +7,9 @@ from app.routers import notes, files
 
 app = FastAPI(title="Home Webserver API")
 
+@app.on_event("startup")
+def create_tables():
+    Base.metadata.create_all(bind=engine)
 
 app.include_router(notes.router)
 app.include_router(files.router)
@@ -20,7 +23,6 @@ def health():
 @app.get("/message")
 def message():
     return {"message": "Hello from backend"}
-
 
 @app.get("/db-check")
 def db_check():

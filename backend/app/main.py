@@ -4,7 +4,7 @@ from sqlalchemy import text
 from app.database import SessionLocal
 from app.routers import notes, files
 
-app = FastAPI(title="Home Webserver API")
+app = FastAPI(title="Home Webserver API", root_path="/home-api")
 
 app.include_router(notes.router)
 app.include_router(files.router)
